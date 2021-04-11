@@ -1,0 +1,157 @@
+{
+	"info": {
+		"_postman_id": "ebb79e84-10ea-4fb0-9c70-79dc84e158ca",
+		"name": "QA-courses",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var a=JSON.parse(responseBody);\r",
+							"\r",
+							"pm.environment.set(\"token\", a.token);\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "login",
+							"value": "Slava",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "12345",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{url}}/login",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "user_info",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Проверка на статус код ответа 200\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"//Проверка на схема JSON респонса\r",
+							"const schema = {\r",
+							"    \"type\":\"object\",\r",
+							"    \"properties\":{\r",
+							"    \"qa_salary_after_12_months\":{\"type\":\"number\"},\r",
+							"    \"qa_salary_after_6_months\":{\"type\":\"number\"},\r",
+							"    \"start_qa_salary\":{\"type\":\"number\"},\r",
+							"    \"person\": {\r",
+							"       \"type\":\"object\",\r",
+							"       \"properties\":{\r",
+							"                 \"u_age\":{\"type\":\"number\"},\r",
+							"                 \"u_salary_1_5_year\":{\"type\":\"number\"},\r",
+							"                 \"u_name\":\r",
+							"                    {\r",
+							"                       \"type\":\"array\",\r",
+							"                        \"items\":\r",
+							"                         [\r",
+							"                          {\"type\":\"string\"},\r",
+							"                          {\"type\":\"number\"},\r",
+							"                          {\"type\":\"number\"}\r",
+							"                         ]\r",
+							"                    }\r",
+							"                    \r",
+							"\r",
+							"}}}};\r",
+							"pm.test(\"Your Response is correct by JSON validate\",function(){\r",
+							"    pm.response.to.have.jsonSchema(schema);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"//Проверка правильности результата перемножения на коэффициент\r",
+							"pm.test(\"You have all correct salaries \", function () {\r",
+							"    const jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.qa_salary_after_6_months).to.eql(jsonData.person.u_name[1]*2);\r",
+							"    pm.expect(jsonData.qa_salary_after_12_months).to.eql(jsonData.person.u_name[1]*2.9);\r",
+							"    pm.expect(jsonData.person.u_salary_1_5_year).to.equal(jsonData.person.u_name[1]*4);\r",
+							"});\r",
+							"\r",
+							" const jsonData = pm.response.json();\r",
+							"console.log(\r",
+							"     jsonData.person.u_name[1]*2\r",
+							"           )\r",
+							"     ;\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "auth_token",
+							"value": "{{token}}",
+							"type": "text"
+						},
+						{
+							"key": "age",
+							"value": "35",
+							"type": "text"
+						},
+						{
+							"key": "salary",
+							"value": "1500",
+							"type": "text"
+						},
+						{
+							"key": "name",
+							"value": "Slava",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{url}}/user_info",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"user_info"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
