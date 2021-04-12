@@ -15,9 +15,7 @@
 							"//Добавление значение токена в переменную окружений\r",
 							"var a=JSON.parse(responseBody);\r",
 							"pm.environment.set(\"token\", a.token);\r",
-							"console.log(\r",
-							"    a\r",
-							")"
+							""
 						],
 						"type": "text/javascript"
 					}
@@ -68,13 +66,13 @@
 							"//Проверка на схема JSON респонса\r",
 							"const schema = {\r",
 							"    \"type\":\"object\",\r",
-							"    \"properties\":{\r",
+							"    \"parameters\":{\r",
 							"    \"qa_salary_after_12_months\":{\"type\":\"number\"},\r",
 							"    \"qa_salary_after_6_months\":{\"type\":\"number\"},\r",
 							"    \"start_qa_salary\":{\"type\":\"number\"},\r",
 							"    \"person\": {\r",
-							"       \"type\":\"object\",\r",
-							"       \"properties\":{\r",
+							"       \"type\":\"number\",\r",
+							"       \"parameters\":{\r",
 							"                 \"u_age\":{\"type\":\"number\"},\r",
 							"                 \"u_salary_1_5_year\":{\"type\":\"number\"},\r",
 							"                 \"u_name\":\r",
@@ -82,7 +80,7 @@
 							"                       \"type\":\"array\",\r",
 							"                        \"items\":\r",
 							"                         [\r",
-							"                          {\"type\":\"string\"},\r",
+							"                          {\"type\":\"integer\"},\r",
 							"                          {\"type\":\"number\"},\r",
 							"                          {\"type\":\"number\"}\r",
 							"                         ]\r",
@@ -94,6 +92,24 @@
 							"    pm.response.to.have.jsonSchema(schema);\r",
 							"});\r",
 							"\r",
+							"//Вторая версия проверки на схему JSON ответа\r",
+							"pm.test(\"Correct JSON №2\", function()\r",
+							"{\r",
+							"const jsonData = pm.response.json();\r",
+							"var req = request.data; \r",
+							"var sal = req.salary;\r",
+							"pm.expect(jsonData.person).to.be.an(\"object\");\r",
+							"pm.expect(jsonData.person.u_age).to.be.a(\"number\");\r",
+							"pm.expect(jsonData.person.u_salary_1_5_year).to.be.a(\"number\");\r",
+							"pm.expect(jsonData.person.u_name).to.be.an(\"array\")\r",
+							"pm.expect(jsonData.person.u_name[0]).to.be.a(\"string\");\r",
+							"pm.expect(jsonData.person.u_name[1]).to.be.a(\"number\");\r",
+							"pm.expect(jsonData.person.u_name[2]).to.be.a(\"number\");\r",
+							"pm.expect(jsonData.qa_salary_after_12_months).to.be.a(\"number\");\r",
+							"pm.expect(jsonData.qa_salary_after_6_months).to.be.a(\"number\");\r",
+							"pm.expect(jsonData.start_qa_salary).to.be.a(\"number\");\r",
+							"pm.expect(jsonData.start_qa_salary).to.eq(Number(sal))\r",
+							"});\r",
 							"\r",
 							"//Проверка правильности результата перемножения на коэффициент\r",
 							"pm.test(\"You have all correct salaries \", function () {\r",
@@ -192,21 +208,24 @@
 							"            }\r",
 							"}\r",
 							"\r",
-							"pm.test(\"JSON scheme is valid\"),function(){\r",
+							"pm.test(\"JSON scheme is valid\",function(){\r",
 							"    pm.response.to.have.jsonSchema(a);\r",
-							"};\r",
+							"});\r",
 							"\r",
 							"//Проверка правильности результата перемножения на коэффициент.\r",
-							"pm.test(\"Future salaries are correct\"),function()\r",
-							"{let jsonData = pm.response.json();\r",
-							"pm.expect(Number(jsonData.salary[1])).to.eql(jsonData.salary[0]*23)}\r",
+							"pm.test(\"Future salaries are correct\",function()\r",
+							"{\r",
+							"    let jsonData = pm.response.json();\r",
+							"pm.expect(Number(jsonData.salary[1])).to.eql(jsonData.salary[0]*2)\r",
+							"});\r",
 							"    \r",
 							"//Проверка, что 2-й элемент массива salary больше 1-го и 0-го\r",
-							"pm.test(\"Correct\"),function()\r",
+							"pm.test(\"Correct child2 greater than child1,child0\", function()\r",
 							"{\r",
 							"var jsonData=pm.response.json();\r",
-							"pm.expect(Number(jsonData.salary[1])).to.greaterThan(jsonData.salary[2])\r",
-							"}\r",
+							"pm.expect(Number(jsonData.salary[2])).to.greaterThan(Number(jsonData.salary[1]));\r",
+							"pm.expect(Number(jsonData.salary[2])).to.greaterThan(jsonData.salary[0]);\r",
+							"});\r",
 							""
 						],
 						"type": "text/javascript"
@@ -261,48 +280,124 @@
 					"script": {
 						"exec": [
 							"//Проверка на статус 200\r",
-							"pm.test(\"Your status is 200\", function()\r",
-							"{pm.response.to.have.status(200)\r",
+							"pm.test(\"Status code is 200\", function()\r",
+							"{\r",
+							"   pm.response.to.have.status(200)\r",
 							"});\r",
 							"\r",
-							"//Проверка на схему JSON\r",
-							"const a =\r",
+							"//Проверка структуры JSON\r",
+							"pm.test(\"JSON is valid\", function()\r",
 							"{\r",
-							"    \"type\":\"object\",\r",
-							"    \"properties\":\r",
-							"       {\r",
-							"        \"age\":{\"type\":\"number\"},\r",
-							"       \"name\":{\"type\":\"string\"}},\r",
-							"       \"salary\":\r",
-							"           {\r",
-							"               \"type\":\"array\", \r",
-							"               \"parameters\":\r",
-							"                {\r",
-							"                 \"items\":\r",
-							"               [\r",
-							"               {\"type\":\"number\"},\r",
-							"               {\"type\":\"string\"},\r",
-							"               {\"type\":\"string\"}\r",
-							"               ]\r",
-							"                 }\r",
-							"            }\r",
-							"}\r",
+							"    let jsotData=pm.response.json();\r",
+							"    pm.expect(jsotData.age).to.be.a(\"number\");\r",
+							"    pm.expect(jsotData.daily_food).to.be.a(\"number\");\r",
+							"    pm.expect(jsotData.daily_sleep).to.be.a(\"number\");\r",
+							"    pm.expect(jsotData.name).to.be.a(\"string\");\r",
+							"});\r",
 							"\r",
-							"pm.test(\"JSON scheme is valid\"),function(){\r",
-							"    pm.response.to.have.jsonSchema(a);\r",
-							"};\r",
-							"\r",
-							"//Проверка правильности результата перемножения на коэффициент.\r",
-							"pm.test(\"Future salaries are correct\"),function()\r",
-							"{let jsonData = pm.response.json();\r",
-							"pm.expect(Number(jsonData.salary[1])).to.eql(jsonData.salary[0]*23)}\r",
-							"    \r",
-							"//Проверка, что 2-й элемент массива salary больше 1-го и 0-го\r",
-							"pm.test(\"Correct\"),function()\r",
+							"//Проверка правильности перемножения коэффициентов\r",
+							"pm.test(\"Daily food and daily weight is correct\", function()\r",
 							"{\r",
-							"var jsonData=pm.response.json();\r",
-							"pm.expect(Number(jsonData.salary[1])).to.greaterThan(jsonData.salary[2])\r",
-							"}\r",
+							"let jsotData=pm.response.json();\r",
+							"let weight=request.data.weight;\r",
+							"pm.expect(jsotData.daily_food).is.eql(weight*0.012);\r",
+							"pm.expect(jsotData.daily_sleep).is.eql(weight*2.5)\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "auth_token",
+							"value": "{{token}}",
+							"type": "text"
+						},
+						{
+							"key": "age",
+							"value": "35",
+							"type": "text"
+						},
+						{
+							"key": "name",
+							"value": "Slava",
+							"type": "text"
+						},
+						{
+							"key": "weight",
+							"value": "70",
+							"type": "text"
+						},
+						{
+							"key": "",
+							"value": "",
+							"type": "text",
+							"disabled": true
+						}
+					]
+				},
+				"url": {
+					"raw": "{{url}}/test_pet_info",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"test_pet_info"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_test_user",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Проверка на статус 200\r",
+							"pm.test(\"Status code is 200\", function()\r",
+							"{\r",
+							"   pm.response.to.have.status(200)\r",
+							"});\r",
+							"\r",
+							"//Проверка структуры JSON\r",
+							"pm.test(\"JSON is correct\", function()\r",
+							"{\r",
+							"let jsonData=pm.response.json();\r",
+							"pm.expect(jsonData).to.be.an(\"object\");\r",
+							"pm.expect(jsonData.age).to.be.a(\"string\");\r",
+							"pm.expect(jsonData.family).to.be.an(\"object\");\r",
+							"pm.expect(jsonData.family.children).to.be.an(\"array\");\r",
+							"pm.expect(jsonData.family.children[0][0]).to.be.a(\"string\");\r",
+							"pm.expect(jsonData.family.children[0][1]).to.be.a(\"number\");\r",
+							"pm.expect(jsonData.family.children[1][0]).to.be.a(\"string\");\r",
+							"pm.expect(jsonData.family.u_salary_1_5_year).to.be.an(\"number\");\r",
+							"pm.expect(jsonData.name).to.be.an(\"string\");\r",
+							"pm.expect(jsonData.salary).to.be.an(\"number\");\r",
+							"});\r",
+							"\r",
+							"//Проверка значени name реквеста и респонса\r",
+							"pm.test(\"Name is correct\", function()\r",
+							"{\r",
+							"   let name1=request.data.name;\r",
+							"   let jsonData=pm.response.json(); \r",
+							"   pm.expect(jsonData.name).to.eql(name1);\r",
+							"})\r",
+							"\r",
+							"//Проверка age реквеста и респонса\r",
+							"pm.test(\"Age match from request to response\",function()\r",
+							"{\r",
+							"    let req=request.data.age;\r",
+							"    let resp=pm.response.json();\r",
+							"    pm.expect(resp.age).to.eql(req)\r",
+							"})\r",
 							""
 						],
 						"type": "text/javascript"
@@ -326,29 +421,162 @@
 							"type": "text"
 						},
 						{
-							"key": "salary",
-							"value": "1100",
-							"type": "text"
-						},
-						{
 							"key": "name",
 							"value": "Slava",
 							"type": "text"
 						},
 						{
-							"key": "weight",
-							"value": "70",
+							"key": "salary",
+							"value": "1100",
 							"type": "text"
+						},
+						{
+							"key": "",
+							"value": "",
+							"type": "text",
+							"disabled": true
 						}
 					]
 				},
 				"url": {
-					"raw": "{{url}}/test_pet_info",
+					"raw": "{{url}}/get_test_user",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
-						"test_pet_info"
+						"get_test_user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "currency",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Проверка на статус 200\r",
+							"pm.test(\"Status code is 200\", function()\r",
+							"{\r",
+							"   pm.response.to.have.status(200)\r",
+							"});\r",
+							"\r",
+							"let a=JSON.parse(responseBody);\r",
+							"pm.environment.set(\"Cur_ID\",Math.floor(Math.random(a.Cur_ID)*a.length));\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "auth_token",
+							"value": "{{token}}",
+							"type": "text"
+						},
+						{
+							"key": "age",
+							"value": "35",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "name",
+							"value": "Slava",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "salary",
+							"value": "1100",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "",
+							"value": "",
+							"type": "text",
+							"disabled": true
+						}
+					]
+				},
+				"url": {
+					"raw": "{{url}}/currency",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"currency"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "curr_byn",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "auth_token",
+							"value": "{{token}}",
+							"type": "text"
+						},
+						{
+							"key": "curr_code",
+							"value": "{{Cur_ID}}",
+							"type": "text"
+						},
+						{
+							"key": "name",
+							"value": "Slava",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "salary",
+							"value": "1100",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "",
+							"value": "",
+							"type": "text",
+							"disabled": true
+						}
+					]
+				},
+				"url": {
+					"raw": "{{url}}/curr_byn",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"curr_byn"
 					]
 				}
 			},
